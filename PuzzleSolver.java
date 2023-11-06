@@ -28,17 +28,41 @@ public class PuzzleSolver {
 
     // Point of Entry.
     public static void main(String[] args) throws Exception {
-        int[][][] initialState = readInputFile("input3.txt", 0, 11);
-        int[][][] goalState = readInputFile("input3.txt", 13, 23);
-        print3DArray(initialState);
-        print3DArray(goalState);
-        Object[] resultAStar = AStar(initialState, goalState);
-        int totalNodes = (int) resultAStar[1];
-        List<Integer> fValues = (List<Integer>) resultAStar[2];
-        System.out.println((List<Character>) resultAStar[0] + "\n totalNodes=" + totalNodes + "\nfValues:" + fValues);
-        writeOutputFile("output.txt", initialState, goalState, (List<Character>) resultAStar[0], totalNodes, fValues);
+        // Define the file prefix for input and output
+        String inputFilePrefix = "input";
+        String outputFilePrefix = "output";
 
+        // Define an array with the specific names of your input files
+        String[] inputFileNames = {inputFilePrefix + ".txt", inputFilePrefix + "1.txt", inputFilePrefix + "2.txt", inputFilePrefix + "3.txt"};
+
+        // Iterate over the array of file names
+        for (String inputFileName : inputFileNames) {
+            // Construct the output file name by replacing "input" with "output" in the input file name
+            String outputFileName = inputFileName.replace(inputFilePrefix, outputFilePrefix);
+
+            // Read the initial and goal states from the input file
+            int[][][] initialState = readInputFile(inputFileName, 0, 11);
+            int[][][] goalState = readInputFile(inputFileName, 13, 23);
+
+            // Print the initial and goal states
+            print3DArray(initialState);
+            print3DArray(goalState);
+
+            // Perform the A* algorithm
+            Object[] resultAStar = AStar(initialState, goalState);
+
+            // Extract the results from the A* algorithm
+            int totalNodes = (int) resultAStar[1];
+            List<Integer> fValues = (List<Integer>) resultAStar[2];
+
+            // Print the results
+            System.out.println((List<Character>) resultAStar[0] + "\nTotal Nodes: " + totalNodes + "\nF Values: " + fValues);
+
+            // Write the results to the output file
+            writeOutputFile(outputFileName, initialState, goalState, (List<Character>) resultAStar[0], totalNodes, fValues);
+        }
     }
+
 
     // Converts a direction index into the corresponding action character.
     private static char getAction(int index) {
