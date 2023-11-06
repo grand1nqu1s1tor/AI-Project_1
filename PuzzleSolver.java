@@ -1,3 +1,4 @@
+//Submitted by Dipesh Parwani(N15729998) & Eshaan Raj Sharma(N15107439)
 import java.io.*;
 import java.util.*;
 
@@ -10,12 +11,17 @@ public class PuzzleSolver {
 
     // A class to represent a state in the puzzle including its location and Cost f.
     private static class PuzzleNode {
+        // The current configuration of the puzzle as a 3D array.
         int[][][] state;
+        // Reference to the parent node from which this node was expanded.
         PuzzleNode parent;
+        // The action taken to get from the parent node to this node.
         char action;
+        // Total cost (f = g + h) to determine node selection.
         int g;
         int h;
         int f;
+        // Coordinates of the blank space
         int blankX, blankY, blankZ;
 
         public PuzzleNode(int[][][] state, int blankX, int blankY, int blankZ) {
@@ -103,41 +109,52 @@ public class PuzzleSolver {
     }
 
     // Reads a 3D puzzle state from a file between specified line numbers.
+
     public static int[][][] readInputFile(String filename, int startLine, int endLine) throws Exception {
         BufferedReader br = new BufferedReader(new FileReader(filename));
+
+        // Initializes a 3x3x3 integer array to hold the state of the puzzle.
         int[][][] state = new int[3][3][3];
+
         String line;
-        int z = 0, x = 0;
+        int z = 0, x = 0;  // z tracks the depth layer in the 3D array, x tracks the row.
         int lineNumber = 0;
 
+        // Reads the file line by line until the end of the file is reached.
         while ((line = br.readLine()) != null) {
-            lineNumber++;
+            lineNumber++;  // Increments the line counter.
 
+            // Skips the lines before the start line.
             if (lineNumber < startLine) {
                 continue;
             }
 
+            // Detects an empty line indicating a new layer in the 3D array, resets x to 0, increments z.
             if (line.trim().isEmpty()) {
                 z++;
                 x = 0;
                 continue;
             }
 
+            // Splits the line into individual numbers using whitespace as a delimiter.
             String[] values = line.split("\\s+");
 
+            // Parses the numbers and stores them in the current layer and row of the 3D array.
             for (int y = 0; y < 3; y++) {
                 state[x][y][z] = Integer.parseInt(values[y]);
             }
+            // Moves to the next row in the current layer.
             x++;
 
+            // Breaks the loop if the end line has been reached.
             if (lineNumber >= endLine) {
                 break;
             }
         }
         br.close();
+        // Returns the populated 3D array.
         return state;
     }
-
     // Helper method to write a 3D state to the file.
     private static void writeStateToFile(BufferedWriter bw, int[][][] state) throws IOException {
         for (int z = 0; z < 3; z++) {
@@ -157,7 +174,7 @@ public class PuzzleSolver {
         for (int z = 0; z < 3; z++)
             for (int x = 0; x < 3; x++)
                 for (int y = 0; y < 3; y++)
-                    if (state[x][y][z] == 0)
+                    if (state[x][y][z] == 0)    // Since blank tile is represented by a 0
                         return new int[] { x, y, z };
         return null;
     }
@@ -222,7 +239,7 @@ public class PuzzleSolver {
         state[x2][y2][z2] = temp;
     }
 
-    // Creates a deep copy of a 3D state array.
+    // Creates a  copy of a 3D state array.
     private static int[][][] copyState(int[][][] state) {
         int[][][] newState = new int[3][3][3];
         for (int x = 0; x < 3; x++)
@@ -231,8 +248,7 @@ public class PuzzleSolver {
         return newState;
     }
 
-    // Calculates the heuristic value (Manhattan distance in this case) for A*
-    // algorithm.
+    // Calculates the heuristic value (Manhattan distance in this case) for A* algorithm.
     private static int calculateHeuristic(int[][][] state, int[][][] goal) {
         int distance = 0; // Initialize the Manhattan distance to 0.
 
@@ -247,9 +263,9 @@ public class PuzzleSolver {
                         // If the position is not null, meaning the tile exists in the goal state.
                         if (position != null) {
                             // Calculate the Manhattan distance for the current tile.
-                            distance += Math.abs(x - position[0]) // Distance on the x-axis.
-                                    + Math.abs(y - position[1]) // Distance on the y-axis.
-                                    + Math.abs(z - position[2]); // Distance on the z-axis.
+                            distance += Math.abs(x - position[0])
+                                    + Math.abs(y - position[1])
+                                    + Math.abs(z - position[2]);
                         } else {
                             // Output an error if the tile is not found in the goal state.
                             System.out.println("Tile not found in goal state at x:" + x + " y:" + y + " z:" + z);
@@ -258,8 +274,6 @@ public class PuzzleSolver {
                 }
             }
         }
-
-        // Return the total Manhattan distance for the entire state.
         return distance;
     }
 
@@ -283,7 +297,7 @@ public class PuzzleSolver {
         List<Integer> fValues = new ArrayList<>();
 
         while (node.parent != null) {
-            path.add(node.action); // Assuming you have an 'action' field in PuzzleNode.
+            path.add(node.action);
             fValues.add(node.f);
             node = node.parent;
         }
@@ -295,7 +309,7 @@ public class PuzzleSolver {
         return new Object[] { path, fValues };
     }
 
-    // The A* search algorithm to find the shortest path from initial to goal state.
+    // The A* search algorithm implementation.
     private static Object[] AStar(int[][][] initialState, int[][][] goalState) {
         PriorityQueue<PuzzleNode> openList = new PriorityQueue<>(Comparator.comparingInt(node -> node.f));
         Map<String, PuzzleNode> allNodesMap = new HashMap<>(); // This will store the best node for each state.
