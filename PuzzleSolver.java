@@ -181,11 +181,15 @@ public class PuzzleSolver {
 
     // Finds the position of a given value in the 3D matrix.
     private static int[] findPosition(int[][][] matrix, int value) {
-        for (int x = 0; x < 3; x++)
-            for (int y = 0; y < 3; y++)
-                for (int z = 0; z < 3; z++)
-                    if (matrix[x][y][z] == value)
-                        return new int[] { x, y, z };
+        for (int z = 0; z < matrix.length; z++) {
+            for (int x = 0; x < matrix[z].length; x++) {
+                for (int y = 0; y < matrix[z][x].length; y++) {
+                    if (matrix[z][x][y] == value) {
+                        return new int[] { z, x, y };
+                    }
+                }
+            }
+        }
         return null;
     }
 
@@ -256,16 +260,18 @@ public class PuzzleSolver {
         for (int z = 0; z < state.length; z++) {
             for (int x = 0; x < state[z].length; x++) {
                 for (int y = 0; y < state[z][x].length; y++) {
-                    if (state[x][y][z] != 0 && state[x][y][z] != goal[x][y][z]) {
+
+                    if (  state[z][x][y] != goal[z][x][y]) {
                         // Find the expected position of the current tile in the goal state.
-                        int[] position = findPosition(goal, state[x][y][z]);
+                        int[] position = findPosition(goal, state[z][x][y]);
 
                         // If the position is not null, meaning the tile exists in the goal state.
                         if (position != null) {
                             // Calculate the Manhattan distance for the current tile.
-                            distance += Math.abs(x - position[0])
-                                    + Math.abs(y - position[1])
-                                    + Math.abs(z - position[2]);
+                            distance += Math.abs(z - position[0])
+                                    + Math.abs(x - position[1])
+                                    + Math.abs(y - position[2]);
+
                         } else {
                             // Output an error if the tile is not found in the goal state.
                             System.out.println("Tile not found in goal state at x:" + x + " y:" + y + " z:" + z);
@@ -298,6 +304,7 @@ public class PuzzleSolver {
 
         while (node.parent != null) {
             path.add(node.action);
+
             fValues.add(node.f);
             node = node.parent;
         }
@@ -306,63 +313,79 @@ public class PuzzleSolver {
         Collections.reverse(path);
         Collections.reverse(fValues);
 
+        System.out.println(fValues);
         return new Object[] { path, fValues };
     }
 
-    // The A* search algorithm implementation.
+    // The A-Star search Algorithm Implementation.
     private static Object[] AStar(int[][][] initialState, int[][][] goalState) {
+        // Initialize a priority queue to manage nodes to be explored with a comparator based on f values
         PriorityQueue<PuzzleNode> openList = new PriorityQueue<>(Comparator.comparingInt(node -> node.f));
-        Map<String, PuzzleNode> allNodesMap = new HashMap<>(); // This will store the best node for each state.
+
+        // A map to keep track of the best path to a given state
+        Map<String, PuzzleNode> allNodesMap = new HashMap<>();
+
+        // A set to keep track of states that have been visited and expanded
         Set<String> closedSet = new HashSet<>();
 
+        // Find the initial blank tile position
         int[] blankPosition = findBlankTile(initialState);
+        // Create the start node with the initial state
         PuzzleNode start = new PuzzleNode(initialState, blankPosition[0], blankPosition[1], blankPosition[2]);
-        start.g = 0;
-        start.h = calculateHeuristic(start.state, goalState);
-        start.f = start.g + start.h;
+        start.g = 0; // Cost from the start node to itself
+        start.h = calculateHeuristic(start.state, goalState); // Estimated cost from this node to the goal
+        start.f = start.g + start.h; // Total estimated cost
 
+        // Add the start node to the open set
         openList.add(start);
-        allNodesMap.put(Arrays.deepToString(start.state), start); // Add the start node to the map.
+        // Record the start node in the map of all nodes
+        allNodesMap.put(Arrays.deepToString(start.state), start);
 
-        int nodesGenerated = 0;
+        int nodesGenerated = 0; // Counter for the total nodes generated
 
+        // Main loop to explore nodes until the queue is empty
         while (!openList.isEmpty()) {
+            // Retrieve and remove the node with the lowest f value from the queue
             PuzzleNode current = openList.poll();
+            // Mark the current state as processed
             String currentStateStr = Arrays.deepToString(current.state);
-            closedSet.add(currentStateStr); // Add to closedSet.
+            closedSet.add(currentStateStr);
 
+            // Check if the current state is the goal state
             if (Arrays.deepEquals(current.state, goalState)) {
+                // Reconstruct the path and the sequence of f values to reach the goal
                 Object[] pathAndFValues = reconstructPath(current);
-                List<Character> path = (List<Character>) pathAndFValues[0];
-                List<Integer> fValues = (List<Integer>) pathAndFValues[1];
-                return new Object[] { path, nodesGenerated, fValues };
+                return new Object[] { pathAndFValues[0], nodesGenerated, pathAndFValues[1] };
             }
 
+            // Explore the neighbors of the current node
             for (PuzzleNode neighbor : getNeighbors(current)) {
-
                 String neighborStateStr = Arrays.deepToString(neighbor.state);
-
+                // Count each unique state generated
                 if (!allNodesMap.containsKey(neighborStateStr)) {
-                    // Increment the counter here only if the node is new (not expanded before)
                     nodesGenerated++;
                 }
+                // Skip this neighbor if it's already been processed
                 if (closedSet.contains(neighborStateStr)) {
-                    continue; // Skip this neighbor since it's already expanded.
+                    continue;
                 }
+                // Calculate the cost values for the neighbor
+                neighbor.g = current.g + 1; // Cost from start to neighbor through current
+                neighbor.h = calculateHeuristic(neighbor.state, goalState); // Heuristic cost from neighbor to goal
+                neighbor.f = neighbor.g + neighbor.h; // Total estimated cost
 
-                neighbor.g = current.g + 1;
-                neighbor.h = calculateHeuristic(neighbor.state, goalState);
-                neighbor.f = neighbor.g + neighbor.h;
-
+                // Check if this is the FIRST time we see this state or if this path is BETTER
                 PuzzleNode existingNode = allNodesMap.get(neighborStateStr);
+                if (existingNode == null || neighbor.g < existingNode.g) {
+                    openList.add(neighbor); // Add the neighbor to the queue
 
-                if (existingNode == null || neighbor.g < existingNode.g) { // If not in allNodesMap or has better path
-                    openList.add(neighbor); // Add to openList.
-                    allNodesMap.put(neighborStateStr, neighbor); // Update the node in allNodesMap with the better path.
+                    allNodesMap.put(neighborStateStr, neighbor); // Record this path as the best for this state
                 }
             }
         }
-        return null; // In case the goal is not reachable.
+        // Return null if the goal state is not reachable from the initial state
+        return null;
     }
+
 
 }
