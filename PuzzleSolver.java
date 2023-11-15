@@ -1,4 +1,5 @@
 //Submitted by Dipesh Parwani(N15729998) & Eshaan Raj Sharma(N15107439)
+
 import java.io.*;
 import java.util.*;
 
@@ -6,7 +7,7 @@ public class PuzzleSolver {
 
     // Possible movement directions in a 3D grid.
     private static final int[][][] DIRECTIONS = {
-            { { -1, 0, 0 }, { 1, 0, 0 }, { 0, 1, 0 }, { 0, -1, 0 }, { 0, 0, 1 }, { 0, 0, -1 } }
+            {{-1, 0, 0}, {1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}}
     };
 
     // A class to represent a state in the puzzle including its location and Cost f.
@@ -72,13 +73,13 @@ public class PuzzleSolver {
 
     // Converts a direction index into the corresponding action character.
     private static char getAction(int index) {
-        char[] actions = { 'N', 'S', 'E', 'W', 'D', 'U' };
+        char[] actions = {'N', 'S', 'E', 'W', 'D', 'U'};
         return actions[index];
     }
 
     // Writes the results to an output file.
     private static void writeOutputFile(String filename, int[][][] initialState, int[][][] goalState,
-            List<Character> actions, int nodesGenerated, List<Integer> fValues) throws IOException {
+                                        List<Character> actions, int nodesGenerated, List<Integer> fValues) throws IOException {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(filename))) {
 
             // Copy initial state and goal state
@@ -155,6 +156,7 @@ public class PuzzleSolver {
         // Returns the populated 3D array.
         return state;
     }
+
     // Helper method to write a 3D state to the file.
     private static void writeStateToFile(BufferedWriter bw, int[][][] state) throws IOException {
         for (int z = 0; z < 3; z++) {
@@ -175,7 +177,7 @@ public class PuzzleSolver {
             for (int x = 0; x < 3; x++)
                 for (int y = 0; y < 3; y++)
                     if (state[x][y][z] == 0)    // Since blank tile is represented by a 0
-                        return new int[] { x, y, z };
+                        return new int[]{x, y, z};
         return null;
     }
 
@@ -185,7 +187,7 @@ public class PuzzleSolver {
             for (int x = 0; x < matrix[z].length; x++) {
                 for (int y = 0; y < matrix[z][x].length; y++) {
                     if (matrix[z][x][y] == value) {
-                        return new int[] { z, x, y };
+                        return new int[]{z, x, y};
                     }
                 }
             }
@@ -261,7 +263,7 @@ public class PuzzleSolver {
             for (int x = 0; x < state[z].length; x++) {
                 for (int y = 0; y < state[z][x].length; y++) {
 
-                    if (  state[z][x][y] != goal[z][x][y]) {
+                    if (state[x][y][z] != 0 && state[z][x][y] != goal[z][x][y]) {
                         // Find the expected position of the current tile in the goal state.
                         int[] position = findPosition(goal, state[z][x][y]);
 
@@ -314,7 +316,7 @@ public class PuzzleSolver {
         Collections.reverse(fValues);
 
         System.out.println(fValues);
-        return new Object[] { path, fValues };
+        return new Object[]{path, fValues};
     }
 
     // The A-Star search Algorithm Implementation.
@@ -355,7 +357,7 @@ public class PuzzleSolver {
             if (Arrays.deepEquals(current.state, goalState)) {
                 // Reconstruct the path and the sequence of f values to reach the goal
                 Object[] pathAndFValues = reconstructPath(current);
-                return new Object[] { pathAndFValues[0], nodesGenerated, pathAndFValues[1] };
+                return new Object[]{pathAndFValues[0], nodesGenerated, pathAndFValues[1]};
             }
 
             // Explore the neighbors of the current node
