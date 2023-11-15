@@ -263,7 +263,7 @@ public class PuzzleSolver {
             for (int x = 0; x < state[z].length; x++) {
                 for (int y = 0; y < state[z][x].length; y++) {
 
-                    if (state[x][y][z] != 0 && state[z][x][y] != goal[z][x][y]) {
+                    if (state[z][x][y] != 0 && state[z][x][y] != goal[z][x][y]) {
                         // Find the expected position of the current tile in the goal state.
                         int[] position = findPosition(goal, state[z][x][y]);
 
@@ -315,7 +315,6 @@ public class PuzzleSolver {
         Collections.reverse(path);
         Collections.reverse(fValues);
 
-        System.out.println(fValues);
         return new Object[]{path, fValues};
     }
 
@@ -343,7 +342,7 @@ public class PuzzleSolver {
         // Record the start node in the map of all nodes
         allNodesMap.put(Arrays.deepToString(start.state), start);
 
-        int nodesGenerated = 0; // Counter for the total nodes generated
+        int nodesGenerated = 1; // Counter for the total nodes generated
 
         // Main loop to explore nodes until the queue is empty
         while (!openList.isEmpty()) {
