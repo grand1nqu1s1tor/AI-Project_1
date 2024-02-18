@@ -49,5 +49,10 @@ The output file will include:
 Contributions are welcome. Please feel free to fork the repository and submit pull requests. 
 For major changes, open an issue first to discuss what you would like to change.
 
+## DS Used
+Algorithms like A* use priority queues to determine the shortest path on a graph. Nodes or vertices 
+are explored based on their priority, which is usually a combination of the cost to reach the node and 
+an estimate of the cost to reach the goal from that node. This ensures that the most promising paths are explored first.
+
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
